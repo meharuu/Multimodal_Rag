@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Audio Emotion Analyzer</title>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --card: #ffffff;
+            --text: #1f2a37;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --primary: #2563eb;
+            --primary-600: #1d4ed8;
+            --shadow: 0 10px 30px rgba(16, 24, 40, .08);
+            --radius: 14px;
+
+            --good-bg: #ecfdf5;
+            --good-t: #047857;
+            --good-b: #a7f3d0;
+            --warn-bg: #fff7ed;
+            --warn-t: #9a3412;
+            --warn-b: #fed7aa;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .wrap {
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 28px 18px 40px;
+        }
+
+        /* Header */
+        .title {
+            text-align: center;
+            font-size: 44px;
+            letter-spacing: -0.02em;
+            margin: 10px 0 20px;
+            font-weight: 780;
+        }
+
+        /* Upload card */
+        .upload {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 18px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .drop {
+            flex: 1;
+            min-width: 320px;
+            border: 2px dashed #c7d2fe;
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(180deg, rgba(37, 99, 235, .04), rgba(37, 99, 235, 0));
+        }
+
+        .dropIcon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: #eef2ff;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+        }
+
+        .dropIcon svg {
+            width: 28px;
+            height: 28px;
+            color: var(--primary)
+        }
+
+        .dropText h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .dropText p {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-size: 13.5px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            background: var(--primary-600);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Layout */
+        .grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+        }
+
+        .card h2 {
+            margin: 0 0 12px;
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: -0.01em;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* Player */
+        .player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px;
+            background: #f9fafb;
+        }
+
+        .play {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #e8efff;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+        }
+
+        .play svg {
+            width: 18px;
+            height: 18px;
+            color: var(--primary);
+        }
+
+        .track {
+            width: 100%;
+        }
+
+        .fileRow {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .bar>div {
+            width: 48%;
+            height: 100%;
+            background: var(--primary);
+            border-radius: 999px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 13px;
+            align-items: center;
+        }
+
+        /* Transcript */
+        .transcriptBox {
+            margin-top: 12px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 12px;
+            line-height: 1.55;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 800;
+            font-size: 12px;
+            border: 1px solid transparent;
+        }
+
+        .pill.good {
+            background: var(--good-bg);
+            color: var(--good-t);
+            border-color: var(--good-b);
+        }
+
+        .pill.warn {
+            background: var(--warn-bg);
+            color: var(--warn-t);
+            border-color: var(--warn-b);
+        }
+
+        /* Right summary */
+        .kpis {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .kpi {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 14px;
+            background: #ffffff;
+        }
+
+        .kpi .label {
+            color: var(--muted);
+            font-size: 12.5px;
+            font-weight: 700;
+        }
+
+        .kpi .value {
+            font-size: 24px;
+            font-weight: 950;
+            margin-top: 6px;
+        }
+
+        .kpi .sub {
+            color: var(--muted);
+            font-size: 12.5px;
+            margin-top: 4px;
+        }
+
+        .bigEmotion {
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            background: #ffffff;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .emoji {
+            width: 84px;
+            height: 84px;
+            border-radius: 999px;
+            background: #fff7ed;
+            display: grid;
+            place-items: center;
+            font-size: 42px;
+            margin: 6px 0 8px;
+            border: 1px solid #fed7aa;
+        }
+
+        .bigEmotion .name {
+            font-size: 24px;
+            font-weight: 950;
+            margin: 0 0 6px;
+        }
+
+        .progress {
+            width: 100%;
+            height: 10px;
+            background: #eef2f7;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid var(--line);
+            margin-top: 8px;
+        }
+
+        .progress>div {
+            width: 93%;
+            height: 100%;
+            background: #16a34a;
+            border-radius: 999px;
+        }
+
+        /* Timeline */
+        .timelineHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            color: var(--muted);
+            font-size: 12.5px;
+        }
+
+        .key {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #cbd5e1;
+            border: 1px solid var(--line);
+        }
+
+        .dot.sad {
+            background: #60a5fa;
+            border-color: #93c5fd;
+        }
+
+        .dot.neu {
+            background: #cbd5e1;
+            border-color: #e5e7eb;
+        }
+
+        .dot.fear {
+            background: #fbbf24;
+            border-color: #fde68a;
+        }
+
+        .timeline {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px;
+            background: #ffffff;
+        }
+
+        .wave {
+            height: 92px;
+            border-radius: 12px;
+            background:
+                linear-gradient(180deg, rgba(37, 99, 235, .08), rgba(37, 99, 235, 0)),
+                repeating-linear-gradient(90deg,
+                    rgba(229, 231, 235, 1) 0px,
+                    rgba(229, 231, 235, 1) 1px,
+                    rgba(255, 255, 255, 0) 1px,
+                    rgba(255, 255, 255, 0) 26px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fake waveform */
+        .wave::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 4% 55%, rgba(37, 99, 235, .28) 0 22px, transparent 24px),
+                radial-gradient(circle at 12% 45%, rgba(37, 99, 235, .22) 0 28px, transparent 30px),
+                radial-gradient(circle at 22% 58%, rgba(37, 99, 235, .26) 0 20px, transparent 22px),
+                radial-gradient(circle at 34% 50%, rgba(37, 99, 235, .22) 0 30px, transparent 32px),
+                radial-gradient(circle at 46% 60%, rgba(37, 99, 235, .18) 0 18px, transparent 20px),
+                radial-gradient(circle at 58% 48%, rgba(37, 99, 235, .22) 0 30px, transparent 32px),
+                radial-gradient(circle at 70% 58%, rgba(37, 99, 235, .20) 0 22px, transparent 24px),
+                radial-gradient(circle at 82% 52%, rgba(37, 99, 235, .22) 0 28px, transparent 30px),
+                radial-gradient(circle at 92% 60%, rgba(37, 99, 235, .18) 0 18px, transparent 20px);
+            opacity: .9;
+            filter: blur(.2px);
+        }
+
+        .cursor {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 64%;
+            width: 2px;
+            background: rgba(37, 99, 235, .7);
+        }
+
+        .segments {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .seg {
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            font-size: 12.5px;
+            font-weight: 800;
+            background: #f9fafb;
+            color: #374151;
+        }
+
+        /* Right transcript */
+        .sideTranscript .item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .sideTranscript .item:last-child {
+            border-bottom: none;
+        }
+
+        .ts {
+            color: var(--muted);
+            font-weight: 800;
+            font-size: 12.5px;
+            margin-bottom: 6px;
+        }
+
+        .quote {
+            color: #374151;
+            line-height: 1.5;
+            font-size: 13.8px;
+        }
+
+        @media (max-width: 950px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpis {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="title">Audio Emotion Analyzer</div>
+
+        <form class="upload" id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="audioInput" name="audio" accept="audio/*" hidden />
+            <div class="drop" id="dropZone">
+                <div class="dropIcon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path
+                            d="M4 14.5A4.5 4.5 0 0 0 8.5 19H17a3 3 0 0 0 .7-5.92A5.5 5.5 0 0 0 7.2 10.6 4.5 4.5 0 0 0 4 14.5Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <div class="dropText">
+                    <h3>Drop your audio file here or click Browse</h3>
+                    <p>Supports MP3, WAV, M4A (max 100MB)</p>
+                    <p class="muted" id="statusText" style="margin-top:6px;">No file selected.</p>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn" id="browseBtn">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Browse File
+                </button>
+                <button type="submit" class="btn" id="analyzeBtn">Analyze</button>
+                <button type="button" class="btn" id="exportBtn" disabled>Export PDF</button>
+            </div>
+        </form>
+
+        <div class="grid">
+            <!-- Left: transcript + player + timeline -->
+            <div>
+                <div class="card">
+                    <h2>Transcript & Analysis</h2>
+
+                    <div class="player">
+                        <div class="play" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M9 7l10 5-10 5V7Z" fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <div class="track">
+                            <div class="fileRow">
+                                <span id="fileName">No file loaded</span>
+                                <span id="timeMeta" style="color:var(--muted); font-weight:800;">00:00 / --:--</span>
+                            </div>
+                            <audio id="audioPlayer" controls style="width:100%; margin-top:8px; display:none;"></audio>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <span class="pill warn" id="primaryEmotion">Primary emotion: --</span>
+                        <span class="pill good" id="confidencePill">Confidence: --</span>
+                        <span class="pill warn" id="intensePill">Segments: --</span>
+                    </div>
+
+                    <div class="transcriptBox" id="transcriptBox">
+                        Upload an audio clip to see the transcript and emotion cues.
+                    </div>
+
+                    <p class="muted" style="margin:10px 2px 0;">
+                        Tip: Click a timeline segment to jump to that moment and highlight the related transcript.
+                    </p>
+                </div>
+
+                <div class="card" style="margin-top:14px;">
+                    <div class="timelineHeader">
+                        <h2 style="margin:0;">Emotion Timeline</h2>
+                        <div class="legend" aria-label="Legend">
+                            <div class="key"><span class="dot neu"></span>Neutral</div>
+                            <div class="key"><span class="dot sad"></span>Saed</div>
+                            <div class="key"><span class="dot fear"></span>Fear</div>
+                        </div>
+                    </div>
+
+                    <div class="timeline">
+                        <div class="wave">
+                            <div class="cursor" title="Current position"></div>
+                        </div>
+
+                        <div class="segments" aria-label="Segments" id="segmentsContainer">
+                            <span class="seg">Segments will appear after analysis.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: summary + transcript list -->
+            <div>
+                <div class="card">
+                    <h2>Detected Emotion</h2>
+
+                    <div class="kpis">
+                        <div class="kpi">
+                            <div class="label">Detected Emotion</div>
+                            <div class="value">Sad</div>
+                            <div class="sub">Top label</div>
+                        </div>
+                        <div class="kpi">
+                            <div class="label">Confidence</div>
+                            <div class="value">0.93</div>
+                            <div class="sub">High</div>
+                        </div>
+                    </div>
+
+                    <div class="bigEmotion">
+                        <div class="emoji" aria-hidden="true" id="emojiIcon">🎧</div>
+                        <div class="name" id="emotionName">--</div>
+                        <div class="muted" id="emotionMeta">Awaiting analysis</div>
+                        <div class="progress" aria-label="Confidence bar">
+                            <div id="confidenceBar"></div>
+                        </div>
+                    </div>
+
+                    <h2 style="margin-top:2px;">Emotion Breakdown</h2>
+                    <div class="muted" style="margin-bottom:10px;">Top probabilities from the classifier.</div>
+
+                    <div id="emotionBreakdown" style="display:grid; gap:10px;">
+                        <div class="muted">Run an analysis to view probabilities.</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:14px;">
+                    <h2>Transcript</h2>
+                    <div class="sideTranscript" id="sideTranscript">
+                        <div class="item">
+                            <div class="ts">--:--</div>
+                            <div class="quote">Segments will be listed here after analysis.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const audioInput = document.getElementById('audioInput');
+        const dropZone = document.getElementById('dropZone');
+        const statusText = document.getElementById('statusText');
+        const browseBtn = document.getElementById('browseBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const fileNameEl = document.getElementById('fileName');
+        const timeMetaEl = document.getElementById('timeMeta');
+        const transcriptBox = document.getElementById('transcriptBox');
+        const emotionName = document.getElementById('emotionName');
+        const emotionMeta = document.getElementById('emotionMeta');
+        const emojiIcon = document.getElementById('emojiIcon');
+        const confidenceBar = document.getElementById('confidenceBar');
+        const primaryEmotion = document.getElementById('primaryEmotion');
+        const confidencePill = document.getElementById('confidencePill');
+        const intensePill = document.getElementById('intensePill');
+        const segmentsContainer = document.getElementById('segmentsContainer');
+        const emotionBreakdown = document.getElementById('emotionBreakdown');
+        const sideTranscript = document.getElementById('sideTranscript');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const exportBtn = document.getElementById('exportBtn');
+        let selectedFile = null;
+        let lastResult = null;
+
+        browseBtn.addEventListener('click', () => audioInput.click());
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2563eb';
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, e => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#c7d2fe';
+            });
+        });
+
+        dropZone.addEventListener('drop', e => {
+            if (e.dataTransfer.files.length) {
+                setFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        audioInput.addEventListener('change', e => {
+            if (e.target.files.length) {
+                setFile(e.target.files[0]);
+            }
+        });
+
+        uploadForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            if (!selectedFile) {
+                statusText.textContent = 'Please choose an audio file first.';
+                return;
+            }
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+            statusText.textContent = 'Running analysis...';
+            const fd = new FormData();
+            fd.append('audio', selectedFile);
+
+            try {
+                const res = await fetch('/analyze', { method: 'POST', body: fd });
+                const maybeJson = await res.json().catch(async () => {
+                    const text = await res.text();
+                    throw new Error(text || res.statusText);
+                });
+                if (!res.ok) throw new Error(maybeJson.error || res.statusText);
+                renderResults(maybeJson);
+                statusText.textContent = 'Done.';
+            } catch (err) {
+                console.error(err);
+                statusText.textContent = `Error: ${err.message}`;
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze';
+            }
+        });
+
+        exportBtn.addEventListener('click', async () => {
+            if (!lastResult) {
+                statusText.textContent = 'Run an analysis before exporting.';
+                return;
+            }
+            try {
+                exportBtn.disabled = true;
+                exportBtn.textContent = 'Building...';
+                const res = await fetch('/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ result: lastResult, filename: fileNameEl.textContent })
+                });
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error(text || res.statusText);
+                }
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = (fileNameEl.textContent || 'report').replace(/\.[^/.]+$/, '') + '_emotion_report.pdf';
+                a.click();
+                URL.revokeObjectURL(url);
+                statusText.textContent = 'Report downloaded.';
+            } catch (err) {
+                statusText.textContent = `Error: ${err.message}`;
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = 'Export PDF';
+            }
+        });
+
+        function setFile(file) {
+            selectedFile = file;
+            statusText.textContent = `Selected: ${file.name}`;
+            fileNameEl.textContent = file.name;
+            const url = URL.createObjectURL(file);
+            audioPlayer.src = url;
+            audioPlayer.style.display = 'block';
+            audioPlayer.onloadedmetadata = () => {
+                timeMetaEl.textContent = `${formatTime(0)} / ${formatTime(audioPlayer.duration || 0)}`;
+            };
+        }
+
+        function formatTime(sec) {
+            if (!sec || Number.isNaN(sec)) return '--:--';
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function pickEmoji(label) {
+            const map = {
+                joy: '😄', happy: '😊', happiness: '😊',
+                sadness: '😢', sad: '😢',
+                anger: '😠', angry: '😠',
+                fear: '😨',
+                surprise: '😲',
+                disgust: '🤢',
+                neutral: '😐'
+            };
+            if (!label) return '🎧';
+            const key = label.toLowerCase();
+            return map[key] || '🎧';
+        }
+
+        function renderResults(data) {
+            lastResult = data;
+            exportBtn.disabled = false;
+            transcriptBox.textContent = data.transcript || 'No transcript returned.';
+            const topLabel = data.emotion?.label || '--';
+            const topScore = data.emotion?.score ? (data.emotion.score * 100).toFixed(1) : '--';
+
+            primaryEmotion.textContent = `Primary emotion: ${topLabel}`;
+            confidencePill.textContent = `Confidence: ${topScore === '--' ? '--' : topScore + '%'}`;
+            intensePill.textContent = data.segments?.length
+                ? `Segments: ${data.segments.length}`
+                : 'Segments: --';
+
+            emotionName.textContent = topLabel;
+            emotionMeta.textContent = data.language ? `Language: ${data.language}` : 'Language: unknown';
+            emojiIcon.textContent = pickEmoji(topLabel);
+            confidenceBar.style.width = `${Math.min(100, Math.round((data.emotion?.score || 0) * 100))}%`;
+            confidenceBar.style.background = '#16a34a';
+
+            if (Array.isArray(data.scores) && data.scores.length) {
+                emotionBreakdown.innerHTML = '';
+                data.scores
+                    .slice()
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 5)
+                    .forEach(score => {
+                        const row = document.createElement('div');
+                        const pct = Math.round(score.score * 100);
+                        row.innerHTML = `
+                            <div style="display:flex; justify-content:space-between; font-weight:900; font-size:13px;">
+                                <span>${score.label}</span><span class="muted">${pct}%</span>
+                            </div>
+                            <div class="progress" style="height:8px;">
+                                <div style="width:${pct}%; background:#2563eb;"></div>
+                            </div>`;
+                        emotionBreakdown.appendChild(row);
+                    });
+            } else {
+                emotionBreakdown.innerHTML = '<div class="muted">No probability scores returned.</div>';
+            }
+
+            if (Array.isArray(data.segments) && data.segments.length) {
+                segmentsContainer.innerHTML = '';
+                sideTranscript.innerHTML = '';
+                data.segments.forEach(seg => {
+                    const label = `${formatTime(seg.start || 0)}–${formatTime(seg.end || 0)}`;
+                    const span = document.createElement('span');
+                    span.className = 'seg';
+                    span.textContent = `${label} • text`;
+                    segmentsContainer.appendChild(span);
+
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    item.innerHTML = `
+                        <div class="ts">${formatTime(seg.start || 0)}</div>
+                        <div class="quote">“${seg.text || ''}”</div>`;
+                    sideTranscript.appendChild(item);
+                });
+            } else {
+                segmentsContainer.innerHTML = '<span class="seg">No segments returned.</span>';
+                sideTranscript.innerHTML = '<div class="muted">No timeline segments provided by Whisper.</div>';
+            }
+        }
+    </script>
+</body>
+
+</html>
