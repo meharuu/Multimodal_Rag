@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Feedback</title>
+    <style>
+        body {
+            font-family: system-ui, Arial;
+            margin: 24px;
+            background: #0b1220;
+            color: #e7eefc
+        }
+
+        .box {
+            max-width: 560px;
+            margin: auto;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 14px;
+            padding: 18px;
+            background: rgba(255, 255, 255, .03)
+        }
+
+        h1 {
+            margin: 0 0 10px
+        }
+
+        .top-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid rgba(255, 255, 255, .12);
+            color: #e7eefc;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            opacity: .85;
+            font-size: 13px
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            margin-top: 6px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(0, 0, 0, .25);
+            color: #e7eefc
+        }
+
+        textarea {
+            min-height: 110px;
+            resize: vertical
+        }
+
+        button {
+            margin-top: 14px;
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(124, 58, 237, .45);
+            background: rgba(124, 58, 237, .20);
+            color: #e7eefc;
+            cursor: pointer;
+            font-weight: 600
+        }
+
+        .msg {
+            margin-top: 10px;
+            font-size: 13px;
+            opacity: .85
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <div class="top-links">
+            <div>
+                <h1>Feedback</h1>
+                <div class="msg">Tell us what you think. This helps improve the system.</div>
+            </div>
+            <a class="pill" href="/feedback/list">View all</a>
+        </div>
+
+        <form id="fbForm">
+            <label>Name (optional)</label>
+            <input id="name" placeholder="Your name">
+
+            <label>Email (optional)</label>
+            <input id="email" type="email" placeholder="you@example.com">
+
+            <label>Rating</label>
+            <select id="rating" required>
+                <option value="">Select…</option>
+                <option value="5">⭐⭐⭐⭐⭐ (Excellent)</option>
+                <option value="4">⭐⭐⭐⭐ (Good)</option>
+                <option value="3">⭐⭐⭐ (Okay)</option>
+                <option value="2">⭐⭐ (Bad)</option>
+                <option value="1">⭐ (Very bad)</option>
+            </select>
+
+            <label>Your message</label>
+            <textarea id="message" required placeholder="Write your feedback…"></textarea>
+
+            <button type="submit">Submit Feedback</button>
+            <div class="msg" id="status"></div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("fbForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                rating: document.getElementById("rating").value,
+                message: document.getElementById("message").value.trim()
+            };
+
+            const status = document.getElementById("status");
+            status.textContent = "Submitting...";
+            status.style.color = "#e7eefc";
+
+            try {
+                const res = await fetch("/api/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error || "Something went wrong.");
+                }
+                status.textContent = "✅ Thanks! Your feedback was submitted.";
+                document.getElementById("fbForm").reset();
+            } catch (err) {
+                status.textContent = `❌ ${err.message}`;
+                status.style.color = "#f87171";
+            }
+        });
+    </script>
+</body>
+
+</html>
