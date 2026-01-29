@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Ask Questions About the Video</h1>
+
+
+<video id="video" width="640" controls class="mb-4">
+<source src="/uploads/{{ video }}" type="video/mp4">
+</video>
+
+
+<input id="question" class="border p-2 w-full" placeholder="Ask a question...">
+<button onclick="ask()" class="bg-green-600 text-white px-4 py-2 mt-2">Ask</button>
+
+
+<div id="answer" class="bg-white p-4 mt-4 rounded"></div>
+
+
+<script>
+async function ask() {
+const q = document.getElementById("question").value;
+const res = await fetch("/ask", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({question: q})
+});
+const data = await res.json();
+
+
+let html = `<p class='mb-2'>${data.answer}</p><ul>`;
+data.sources.forEach(s =>{
+html += `<li class='text-blue-600 cursor-pointer' onclick='jump(${s.start})'>[${s.start}s] ${s.text}</li>`;
+});
+html += '</ul>';
+
+
+document.getElementById("answer").innerHTML = html;
+}
+
+
+function jump(t) {
+const v = document.getElementById("video");
+v.currentTime = t;
+v.play();
+}
+</script>
+{% endblock %}

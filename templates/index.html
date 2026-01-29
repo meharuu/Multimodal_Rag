@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Video RAG System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">
+      Video Question Answering (RAG)
+    </h1>
+
+    <!-- Upload -->
+    <div class="bg-white p-4 rounded shadow mb-6">
+      <input type="file" id="videoInput" class="mb-3" />
+      <button onclick="uploadVideo()" class="bg-blue-600 text-white px-4 py-2 rounded">
+        Upload Video
+      </button>
+      <p id="uploadStatus" class="mt-2 text-sm"></p>
+    </div>
+
+    <!-- Ask -->
+    <div class="bg-white p-4 rounded shadow">
+      <input
+        type="text"
+        id="questionInput"
+        placeholder="Ask a question about the video..."
+        class="border p-2 w-full mb-3"
+      />
+      <button onclick="askQuestion()" class="bg-green-600 text-white px-4 py-2 rounded">
+        Ask
+      </button>
+      <div id="answerBox" class="mt-4 text-gray-800"></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

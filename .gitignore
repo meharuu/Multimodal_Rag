@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Data
+data/
+*.csv
+*.h5
+*.pt
+
+# Models
+models/
+
+# Environment
+.env
+.env.*
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
